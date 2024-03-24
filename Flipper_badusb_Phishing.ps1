@@ -7,7 +7,7 @@ function Get-Creds {
 
     while ($form -eq $null)
     {
-        $cred = $host.ui.promptforcredential('Autenticação recusada','','',''); 
+        $cred = $host.ui.promptforcredential('Autenticação EPFF-INTEP','','',''); 
         $cred.getnetworkcredential().password
 
         if([string]::IsNullOrWhiteSpace([Net.NetworkCredential]::new('', $cred.Password).Password))
@@ -18,7 +18,7 @@ function Get-Creds {
             }
 
             $msgBody = "As informações não podem estar vazias!"
-            $msgTitle = "Error"
+            $msgTitle = "Erro de autenticação"
             $msgButton = 'Ok'
             $msgImage = 'Stop'
             $Result = [System.Windows.MessageBox]::Show($msgBody,$msgTitle,$msgButton,$msgImage)
